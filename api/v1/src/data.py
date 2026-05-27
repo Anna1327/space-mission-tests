@@ -1,4 +1,6 @@
+import random
 from faker import Faker
+from api.v1.src.constants import SYSTEMS_TYPES, SYSTEMS_STATUS
 
 fake = Faker()
 
@@ -24,4 +26,14 @@ class AuthData:
         return {
             "client_id": "nonexistent",
             "client_secret": "wrong"
+        }
+
+
+class SystemsData:
+    @property
+    def create_system_payload(self):
+        return {
+          "name": f"{fake.word()} starship",
+          "system_type": random.choice(SYSTEMS_TYPES),
+          "status": random.choice(SYSTEMS_STATUS)
         }
