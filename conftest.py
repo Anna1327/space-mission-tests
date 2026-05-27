@@ -1,5 +1,6 @@
 import pytest
 from api.v1.services.api_client import APIClient
+from api.v1.src.data import AuthData, SystemsData
 from settings import settings
 
 
@@ -8,3 +9,47 @@ async def unauthentic_client():
     client = APIClient(base_url=settings.get("BASE_URL", "http://localhost:8000"))
     yield client
     await client.close()
+
+
+@pytest.fixture(scope="function")
+async def authentic_client():
+    client = APIClient(base_url=settings.get("BASE_URL", "http://localhost:8000"))
+    data = AuthData()
+    register_payload = data.get_auth_payload
+    register_resp = await client.post("/api/v1/auth/register", json=register_payload)
+    assert register_resp.status_code in (200, 201)
+
+    login_payload = data.make_login_payload(register_payload)
+    login_resp = await client.post("/api/v1/auth/token", json=login_payload)
+    assert login_resp.status_code == 200
+
+    token_data = login_resp.json()
+    jwt_token = token_data.get("access_token")
+    client.token = jwt_token
+    yield client
+    await client.close()
+
+
+@pytest.fixture()
+async def created_system(authentic_client):
+    data = SystemsData()
+    systems_payload = data.create_system_payload
+    response = await authentic_client.post("/api/v1/systems/", json=systems_payload)
+    yield response.json()
+    system_id = response.json()['id']
+    response = await authentic_client.delete(f"/api/v1/systems/{system_id}")
+    assert response.status_code == 200
+
+
+@pytest.fixture()
+async def created_systems(authentic_client, request):
+    system_ids = []
+    for i in range(request.param):
+        data = SystemsData()
+        systems_payload = data.create_system_payload
+        response = await authentic_client.post("/api/v1/systems/", json=systems_payload)
+        system_ids.append(response.json()["id"])
+    yield system_ids
+    for system_id in system_ids:
+        response = await authentic_client.delete(f"/api/v1/systems/{system_id}")
+        assert response.status_code == 200
