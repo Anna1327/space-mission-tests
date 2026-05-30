@@ -13,6 +13,12 @@ async def test_get_systems_returns_200(authentic_client):
     response = await authentic_client.get("/api/v1/systems/")
     assert response.status_code == 200
 
+# GET /systems без токена (Негативный):
+# Дёрнуть эндпоинт через твоего unauthentic_client и проверить, что он железно возвращает 401 Unauthorized.
+
+# GET /systems с тухлым токеном (Негативный):
+# Вручную записать в client.token = "fake_token" и проверить, что бэк не пускает (снова 401).
+
 
 @allure.feature("Systems checks")
 @allure.title("Create new system (POST /api/v1/systems/)")
@@ -83,3 +89,37 @@ async def test_get_system_by_id_returns_404(authentic_client):
     system_id = 999999
     response = await authentic_client.get(f"/api/v1/systems/{system_id}")
     assert response.status_code == 404
+
+
+@allure.feature("Systems trigger checks")
+@allure.title("Add trigger event to system (POST /api/v1/systems/{system_id}/trigger/{event_type})")
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "event_type, expected_status",
+    [
+        ("failure", "failed"),
+        ("warning", "warning"),
+        ("recover", "active"),
+    ]
+)
+async def test_add_trigger_event_to_system(authentic_client, created_system, event_type, expected_status):
+    response = await authentic_client.post(f"/api/v1/systems/{created_system['id']}/trigger/{event_type}")
+    data = response.json()
+    assert data["status"] == 'triggered'
+    get_system = await authentic_client.get(f"/api/v1/systems/{created_system['id']}")
+    system_data = get_system.json()
+    assert system_data["status"] == expected_status
+
+
+@allure.feature("Systems trigger checks")
+@allure.title("Add trigger event to system negative (POST /api/v1/systems/{system_id}/trigger/{event_type})")
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "event_type",
+    ["explosion"]
+)
+async def test_add_trigger_event_negative(authentic_client, created_system, event_type):
+    response = await authentic_client.post(f"/api/v1/systems/{created_system['id']}/trigger/{event_type}")
+    assert response.status_code == 400
+    data = response.json()
+    assert data["detail"] == 'Invalid event_type. Must be one of: failure, warning, recover'
