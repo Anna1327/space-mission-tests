@@ -1,6 +1,6 @@
 import pytest
 from api.v1.services.api_client import APIClient
-from api.v1.src.data import AuthData, SystemsData
+from api.v1.src.data import AuthData, SystemsData, SensorsData
 from settings import settings
 
 
@@ -53,3 +53,11 @@ async def created_systems(authentic_client, request):
     for system_id in system_ids:
         response = await authentic_client.delete(f"/api/v1/systems/{system_id}")
         assert response.status_code == 200
+
+
+@pytest.fixture()
+async def created_sensor(authentic_client, created_system):
+    data = SensorsData()
+    sensor_payload = data.create_sensor_payload
+    response = await authentic_client.post(f"/api/v1/systems/{created_system["id"]}/sensors/", json=sensor_payload)
+    yield created_system, response.json()

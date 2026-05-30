@@ -1,6 +1,6 @@
 import random
 from faker import Faker
-from api.v1.src.constants import SYSTEMS_TYPES, SYSTEMS_STATUS
+from api.v1.src.constants import SYSTEMS_TYPES, SYSTEMS_STATUS, SENSORS
 
 fake = Faker()
 
@@ -37,3 +37,22 @@ class SystemsData:
           "system_type": random.choice(SYSTEMS_TYPES),
           "status": random.choice(SYSTEMS_STATUS)
         }
+
+
+class SensorsData:
+    @property
+    def create_sensor_payload(self):
+        return random.choice(SENSORS)
+
+    @staticmethod
+    def update_sensor_payload(value):
+        return {
+            "value": value
+        }
+
+    @staticmethod
+    def get_sensor_status(value, min, max):
+        if value > max or value < min:
+            return 'abnormal'
+        if min <= value <= max:
+            return 'normal'
