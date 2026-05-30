@@ -30,6 +30,9 @@ class APIClient:
     async def put(self, path, **kwargs):
         return await self._client.put(f"{self.base_url}{path}", headers=self._headers(), **kwargs)
 
+    async def patch(self, path, **kwargs):
+        return await self._client.patch(f"{self.base_url}{path}", headers=self._headers(), **kwargs)
+
     async def delete(self, path, **kwargs):
         return await self._client.delete(f"{self.base_url}{path}", headers=self._headers(), **kwargs)
 
