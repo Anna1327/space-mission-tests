@@ -1,6 +1,7 @@
 import pytest
 from api.v1.services.api_client import APIClient
 from api.v1.src.data import AuthData, SystemsData, SensorsData
+from services.ws.ws_client import WSClient
 from settings import settings
 
 
@@ -61,3 +62,11 @@ async def created_sensor(authentic_client, created_system):
     sensor_payload = data.create_sensor_payload
     response = await authentic_client.post(f"/api/v1/systems/{created_system["id"]}/sensors/", json=sensor_payload)
     yield created_system, response.json()
+
+
+@pytest.fixture(scope="function")
+async def authentic_ws_client(authentic_client):
+    token = authentic_client.token
+
+    ws_client = WSClient(token=token)
+    return ws_client
