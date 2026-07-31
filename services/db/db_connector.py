@@ -12,9 +12,6 @@ class DBConnector:
         if db_url.startswith("postgresql+asyncpg://"):
             db_url = db_url.replace("postgresql+asyncpg://", "postgresql://", 1)
 
-        if "@db:" in db_url:
-            db_url = db_url.replace("@db:", "@localhost:", 1)
-
         self.conn = await asyncpg.connect(db_url)
         return self
 
@@ -23,7 +20,7 @@ class DBConnector:
             await self.conn.close()
 
     async def select_from_table(self, table: str, where: str = '', params: tuple = ()):
-        """Асинхронный SELECT. Возвращает список словарей [{поле: значение}]"""
+        """Асинхронный SELECT. Возвращает список словарей"""
         query = f"SELECT * FROM {table}"
         if where:
             query += f" WHERE {where}"
