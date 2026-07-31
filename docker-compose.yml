@@ -1,0 +1,13 @@
+services:
+  tests:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: space_mission_tests_runner
+    network_mode: "host"
+    environment:
+      - BASE_URL=http://localhost:8000/
+      - WS_URL=ws://localhost:8000/api/v1/ws/
+      - DATABASE_URL=postgresql://postgres:postgres@localhost:5432/space_monitoring
+    volumes:
+      - ./allure-results:/app/allure-results

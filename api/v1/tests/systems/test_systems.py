@@ -36,12 +36,12 @@ async def test_get_systems_with_pagination(authentic_client, created_systems):
     response = await authentic_client.get("/api/v1/systems/?skip=2&limit=5")
     assert response.status_code == 200
 
-    data = response.json()
-    assert len(data) == 5
+    response_data = response.json()
+    assert len(response_data) == 5
 
     response = await authentic_client.get("/api/v1/systems/")
     all_systems = response.json()
-    assert data[0]["id"] == all_systems[2]["id"]
+    assert response_data[0]["id"] == all_systems[2]["id"]
 
 
 @allure.feature("Systems checks")
@@ -52,9 +52,9 @@ async def test_get_systems_with_sorting(authentic_client, created_systems):
     response = await authentic_client.get("/api/v1/systems/?sort_by=name&order=desc")
     assert response.status_code == 200
 
-    data = response.json()
-    received_names = [system["name"] for system in data]
-    expected_names = sorted(received_names, reverse=True)
+    response_data = response.json()
+    received_names = [system["name"] for system in response_data]
+    expected_names = sorted(received_names, key=lambda x: x.lower(), reverse=True)
     assert received_names == expected_names
 
 
@@ -90,8 +90,8 @@ async def test_get_system_by_id_returns_200(authentic_client, created_system):
 )
 async def test_add_trigger_event_to_system(authentic_client, created_system, event_type, expected_status):
     response = await authentic_client.post(f"/api/v1/systems/{created_system['id']}/trigger/{event_type}")
-    data = response.json()
-    assert data["status"] == 'triggered'
+    response_data = response.json()
+    assert response_data["status"] == 'triggered'
     get_system = await authentic_client.get(f"/api/v1/systems/{created_system['id']}")
     system_data = get_system.json()
     assert system_data["status"] == expected_status
@@ -113,8 +113,8 @@ async def test_get_systems_with_fake_token(unauthentic_client):
     unauthentic_client.token = "this_is_a_fake_and_broken_jwt_token"
     response = await unauthentic_client.get("/api/v1/systems/")
     assert response.status_code == 401
-    data = response.json()
-    assert data["detail"] == "Invalid or expired token"
+    response_data = response.json()
+    assert response_data["detail"] == "Invalid or expired token"
 
 
 @allure.feature("Systems checks")
@@ -136,5 +136,5 @@ async def test_get_system_by_id_returns_404(authentic_client):
 async def test_add_trigger_event_negative(authentic_client, created_system, event_type):
     response = await authentic_client.post(f"/api/v1/systems/{created_system['id']}/trigger/{event_type}")
     assert response.status_code == 400
-    data = response.json()
-    assert data["detail"] == 'Invalid event_type. Must be one of: failure, warning, recover'
+    response_data = response.json()
+    assert response_data["detail"] == 'Invalid event_type. Must be one of: failure, warning, recover'
