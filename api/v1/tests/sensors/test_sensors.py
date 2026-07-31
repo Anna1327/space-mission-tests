@@ -13,9 +13,9 @@ auth_data = AuthData()
 async def test_get_sensors_returns_200(authentic_client, created_sensor):
     system, sensor = created_sensor
     response = await authentic_client.get(f"/api/v1/systems/{system['id']}/sensors/")
-    data = response.json()
+    response_data = response.json()
     assert response.status_code == 200
-    assert data[0]["name"] == sensor["name"]
+    assert response_data[0]["name"] == sensor["name"]
 
 
 @allure.feature("Sensors checks")
