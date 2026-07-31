@@ -1,0 +1,98 @@
+name: Space Mission QA Automation Pipeline
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: space_monitoring
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d space_monitoring"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+    - name: Checkout QA Framework Repository
+      uses: actions/checkout@v4
+
+    - name: Checkout Backend Repository
+      uses: actions/checkout@v4
+      with:
+        repository: 'Anna1327/space_mission_monitoring'
+        path: 'backend'
+
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: Set up Python 3.13 (for QA framework)
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.13'
+
+    - name: Install Backend Dependencies & Start FastAPI
+      run: |
+        cd backend
+        pip install -r requirements.txt
+        uvicorn app.main:app --host 0.0.0.0 --port 8000 &
+        cd ..
+
+    - name: Install QA Framework Dependencies
+      run: |
+        pip install -r requirements.txt
+
+    - name: Wait for Backend Healthcheck
+      run: |
+        python -c '
+        import urllib.request, time
+        for _ in range(30):
+            try:
+                if urllib.request.urlopen("http://localhost:8000/health/detailed").getcode() == 200:
+                    print("Backend is ready!"); break
+            except:
+                pass
+            time.sleep(1)
+        else:
+            raise Exception("Backend failed to start")
+        '
+
+    - name: Run Automated Regression Suite
+      env:
+        BASE_URL: http://localhost:8000/
+        WS_URL: ws://localhost:8000/api/v1/ws/
+        DATABASE_URL: postgresql://postgres:postgres@localhost:5432/space_monitoring
+      run: |
+        pytest -v --alluredir=allure-results
+
+    - name: Upload Allure Results Artifacts
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: allure-results
+        path: allure-results
+        retention-days: 5
