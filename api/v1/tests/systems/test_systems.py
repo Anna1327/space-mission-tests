@@ -54,7 +54,7 @@ async def test_get_systems_with_sorting(authentic_client, created_systems):
 
     response_data = response.json()
     received_names = [system["name"] for system in response_data]
-    expected_names = sorted(received_names, reverse=True)
+    expected_names = sorted(received_names, key=lambda x: x.lower(), reverse=True)
     assert received_names == expected_names
 
 
