@@ -1,6 +1,7 @@
 import pytest
 from api.v1.services.api_client import APIClient
 from api.v1.src.data import AuthData, SystemsData, SensorsData
+from services.db.db_connector import DBConnector
 from services.ws.ws_client import WSClient
 from settings import settings
 
@@ -70,3 +71,9 @@ async def authentic_ws_client(authentic_client):
 
     ws_client = WSClient(token=token)
     return ws_client
+
+
+@pytest.fixture(scope="function")
+async def db_connector():
+    async with DBConnector() as connector:
+        yield connector
