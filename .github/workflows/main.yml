@@ -56,6 +56,9 @@ jobs:
         python-version: '3.13'
 
     - name: Install Backend Dependencies & Start FastAPI
+      env:
+        DATABASE_URL: postgresql+asyncpg://postgres:postgres@localhost:5432/space_monitoring
+        REDIS_URL: redis://localhost:6379/0
       run: |
         cd backend
         pip install -r requirements.txt
