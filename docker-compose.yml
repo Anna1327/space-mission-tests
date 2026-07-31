@@ -4,16 +4,10 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: space_mission_tests_runner
+    network_mode: "host"
     environment:
-      - BASE_URL=http://space_mission_monitoring-backend-1:8000/
-      - WS_URL=ws://space_mission_monitoring-backend-1:8000/api/v1/ws/
-      - DATABASE_URL=postgresql://postgres:postgres@space_mission_monitoring-db-1:5432/space_monitoring
+      - BASE_URL=http://localhost:8000/
+      - WS_URL=ws://localhost:8000/api/v1/ws/
+      - DATABASE_URL=postgresql://postgres:postgres@localhost:5432/space_monitoring
     volumes:
       - ./allure-results:/app/allure-results
-    networks:
-      - space_network
-
-networks:
-  space_network:
-    name: space_mission_monitoring_default
-    external: true
