@@ -2,6 +2,8 @@
 
 FastAPI Testing | Pytest | HTTPX | Asyncio | WebSockets | Locust
 
+CI/CD: [![Space Mission QA Automation Pipeline](https://github.com/Anna1327/space-mission-tests/actions/workflows/main.yml/badge.svg)](https://github.com/Anna1327/space-mission-tests/actions/workflows/main.yml)
+
 Высокопроизводительный асинхронный фреймворк для комплексного автоматизированного тестирования бэкенда космического корабля (экосистема [**Space Mission Monitoring**](https://github.com/Anna1327/space_mission_monitoring)). Разработан как полностью автономная и изолированная инфраструктура для обеспечения непрерывного контроля качества (Quality Assurance) распределенного приложения.
 
 ## 📋 Архитектура и типы тестирования
