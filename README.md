@@ -1,53 +1,55 @@
 # 🧪 Space Mission Automation QA Framework
 
+**English** | [Русский](README.ru.md)
+
 FastAPI Testing | Pytest | HTTPX | Asyncio | WebSockets | Locust
 
 CI/CD: [![Space Mission QA Automation Pipeline](https://github.com/Anna1327/space-mission-tests/actions/workflows/main.yml/badge.svg)](https://github.com/Anna1327/space-mission-tests/actions/workflows/main.yml)
 
-Высокопроизводительный асинхронный фреймворк для комплексного автоматизированного тестирования бэкенда космического корабля (экосистема [**Space Mission Monitoring**](https://github.com/Anna1327/space_mission_monitoring)). Разработан как полностью автономная и изолированная инфраструктура для обеспечения непрерывного контроля качества (Quality Assurance) распределенного приложения.
+A high-performance asynchronous framework for comprehensive automated testing of a spacecraft’s backend (the [**Space Mission Monitoring**](https://github.com/Anna1327/space_mission_monitoring) ecosystem). Designed as a fully autonomous and isolated infrastructure to ensure continuous quality assurance (QA) of a distributed application.
 
-## 📋 Архитектура и типы тестирования
+## 📋 Architecture and types of testing
 
-Фреймворк спроектирован на неблокирующем вводе-выводе, функционирует в рамках единого Event Loop сессии и покрывает регрессионный функционал на всех уровнях интеграции:
+The framework is built on non-blocking I/O, operates within a single session’s event loop, and covers regression testing at all levels of integration:
 
-1. **Async API Testing (`httpx`)**: Параллельное тестирование REST-эндпоинтов, верификация JWT-авторизации, механизмов разграничения прав доступа и лимитов запросов Rate Limiter (`slowapi`).
-2. **Asynchronous WebSocket Testing (`websockets`)**: Нативное тестирование реактивных подписок на комнаты телеметрии систем. Валидация асинхронных JSON-фреймов в реальном времени с защитой от Race Condition.
-3. **Database State Validation (`asyncpg`)**: Кастомный инфраструктурный контекстный менеджер `DBConnector` для прямого низкоуровневого доступа к СУБД PostgreSQL. Позволяет готовить фикстуры и валидировать физическое состояние данных на диске в обход ORM-слоя.
-4. **End-to-End (E2E) Scenarios (`allure.step`)**: Линейная трассировка сквозных бизнес-процессов: *Регистрация клиента ➔ Инициализация датчиков миссии ➔ Имитация аварии ➔ Асинхронный перехват warning-ивента в WebSocket ➔ Валидация каскадной записи инцидента в БД ➔ Симуляция авто-восстановления системы (Auto-Recovery)*.
-5. **Load & Performance Testing (`Locust`)**: Headless-скрипты симуляции конкурентной нагрузки для верификации деградации времени отклика асинхронного хелсчека бэкенда при росте числа пользователей.
+1. **Async API Testing (`httpx`)**: Parallel testing of REST endpoints, verification of JWT authorisation, access control mechanisms and rate limiter (`slowapi`) request limits.
+2. **Asynchronous WebSocket Testing (`websockets`)**: Native testing of reactive subscriptions to system telemetry channels. Real-time validation of asynchronous JSON frames with protection against race conditions.
+3. **Database State Validation (`asyncpg`)**: A custom infrastructure context manager, `DBConnector`, for direct low-level access to the PostgreSQL DBMS. It allows you to prepare fixtures and validate the physical state of data on disk, bypassing the ORM layer.
+4. **End-to-End (E2E) Scenarios (`allure.step`)**: Linear tracing of end-to-end business processes: *Customer registration ➔ Initialisation of mission sensors ➔ Simulation of a failure ➔ Asynchronous interception of a warning event in WebSocket ➔ Validation of cascading incident logging in the database ➔ Simulation of system auto-recovery*.
+5. **Load & Performance Testing (`Locust`)**: Headless scripts simulating concurrent load to verify the degradation of the backend’s asynchronous health check response time as the number of users increases.
 
-## 🛠 Технологический стек
+## 🛠 Technology stack
 
-- **Ядро:** Python 3.13, Pytest 8+
-- **Асинхронные движки:** Asyncio, AnyIO
-- **HTTP-транспорт:** HTTPX 
-- **WebSocket-протокол:** websockets 16.0 (нативный асинхронный клиент)
-- **Драйвер БД:** asyncpg (прямое асинхронное бинарное подключение)
-- **Нагрузочное тестирование:** Locust (Headless-режим)
-- **Генерация отчетов:** Allure Framework
-- **Оркестрация и CI/CD:** Docker, Docker Compose, GitHub Actions
+- **Core:** Python 3.13, Pytest 8+
+- **Asynchronous engines:** Asyncio, AnyIO
+- **HTTP transport:** HTTPX
+- **WebSocket protocol:** websockets 16.0 (native asynchronous client)
+- **Database driver:** asyncpg (direct asynchronous binary connection)
+- **Load testing:** Locust (Headless mode)
+- **Reporting:** Allure Framework
+- **Orchestration and CI/CD:** Docker, Docker Compose, GitHub Actions
 
-## 🚀 Изолированный запуск локально
+## 🚀 Isolated local execution
 
-### Требования
+### Requirements
 - Docker / Docker Compose
 
-Тестовый фреймворк полностью контейнеризирован, запускается в изолированном сетевом контуре и взаимодействует с сервисами приложения внутри общей Docker-сети.
+The test framework is fully containerized, runs in an isolated network environment and interacts with the application’s services within the shared Docker network.
 
 ```bash
-# 1. Клонировать репозиторий с тестами
+# 1. Clone the test repository
 git clone https://github.com
 cd space-mission-tests
 
-# 2. Локальный запуск тестов в режиме ручного дебага
+# 2. Run tests locally in manual debug mode
 pytest -v
 
-# 3. Изолированный запуск всего сьюта в Docker-контейнере
+# 3. Run the entire test suite in isolation within a Docker container
 docker compose up --build --abort-on-container-exit
 ```
 
-## 📡 Конвейер CI/CD (GitHub Actions)
+## 📡 CI/CD Pipeline (GitHub Actions)
 
-В инфраструктуре проекта настроен автоматический пайплайн непрерывной интеграции:
-- **Интеграционный триггер:** Любой push или успешный merge в репозиторий бэкенда автоматически запускает регрессионный сьют тестов в данном репозитории.
-- **Стабильный стейдж:** При обновлении кода самих тестов запускается валидация синтаксиса, линтинг и проверка консистентности фикстур фреймворка.
+An automated continuous integration pipeline is set up in the project’s infrastructure:
+- **Integration trigger:** Any push or successful merge to the backend repository automatically triggers the regression test suite in that repository.
+- **Stable stage:** When the test code itself is updated, syntax validation, linting, and a consistency check of the framework’s fixtures are run.
